@@ -1,0 +1,34 @@
+{
+    "name": "chrisyue/mala",
+    "description": "Translate your http video resources (m3u8) into a http live streaming channel",
+    "homepage": "http://chrisyue.com",
+    "type": "library",
+    "authors": [{
+        "name": "chrisyue",
+        "email": "blizzchris@gmail.com",
+        "homepage": "http://chrisyue.com"
+    }],
+    "keywords": [
+        "m3u8",
+        "hls"
+    ],
+    "license": [
+        "MIT"
+    ],
+    "require": {
+        "php": ">=5.3.9",
+        "chrisyue/php-m3u8": "1.0.x@dev"
+    },
+    "autoload": {
+        "psr-0": {
+            "Chrisyue\\Mala" : ""
+        }
+    },
+    "target-dir": "Chrisyue/Mala",
+    "extra": {
+        "branch-alias" : {
+            "dev-master" : "1.0-dev"
+        }
+    }
+}
+
