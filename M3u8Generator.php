@@ -1,11 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Mala package.
+ *
+ * (c) Chrisyue <http://chrisyue.com/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Chrisyue\Mala;
 
-use Chrisyue\Mala\Model\ChannelInterface;
-use Chrisyue\PhpM3u8\M3u8\Playlist;
-use Chrisyue\PhpM3u8\M3u8\M3u8;
 use Chrisyue\Mala\Manager\MediaSegmentManagerInterface;
+use Chrisyue\Mala\Model\ChannelInterface;
+use Chrisyue\PhpM3u8\M3u8\M3u8;
+use Chrisyue\PhpM3u8\M3u8\Playlist;
 
 class M3u8Generator
 {
@@ -15,21 +24,20 @@ class M3u8Generator
     public function __construct(MediaSegmentManagerInterface $manager, array $options)
     {
         $this->manager = $manager;
-        $this->options = $options + [
+        $this->options = $options + array(
             'version' => 3,
             'target_duration' => 10,
-        ];
+        );
     }
 
-    public function generate(ChannelInterface $channel)
+    public function generate(ChannelInterface $channel, \DateTime $startsAt = null)
     {
         $targetDuration = $this->options['target_duration'];
 
-        $startsAt = new \DateTime();
-        $endsAt = clone $startsAt;
-        $endsAt->modify(sprintf('+%d seconds', $targetDuration * 3 - 1));
-
-        $segments = $this->manager->findPlaying($channel, $startsAt, $endsAt);
+        if (null === $startsAt) {
+            $startsAt = new \DateTime();
+        }
+        $segments = $this->manager->findPlaying($channel, $startsAt, $targetDuration);
         $playlist = new Playlist($segments);
 
         $first = $playlist->getFirst();

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Mala package.
+ *
+ * (c) Chrisyue <http://chrisyue.com/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Chrisyue\Mala;
 
 use Chrisyue\Mala\Manager\EpgManagerInterface;
@@ -22,25 +31,31 @@ class PlaylistScheduler
 
     public function schedule(ChannelInterface $channel, \DateTime $startsAt, \DateTime $endsAt)
     {
-        $this->mediaSegmentManager->clear($channel, $startsAt);
+        $epg = $this->epgManager->find($channel, $startsAt, $endsAt);
+        if (empty($epg)) {
+            throw new \UnexpectedValueException('there is no epg found');
+        }
+
+        $firstProgramStartsAt = $epg[0]->getStartsAt();
+        $this->mediaSegmentManager->clear($channel, $firstProgramStartsAt);
 
         $lastMediaSegment = $this->mediaSegmentManager->findLast($channel);
 
         $sequence = 0;
-        if (null !== $lastMediaSegment && $startsAt->getTimestamp() <= $lastMediaSegment->getEndsAt()->getTimestamp() + 1) {
+        if (null !== $lastMediaSegment && $firstProgramStartsAt->getTimestamp() <= $lastMediaSegment->getEndsAt()->getTimestamp() + 1) {
             $sequence = $lastMediaSegment->getSequence();
         }
 
-        $epg = $this->epgManager->find($channel, $startsAt, $endsAt);
         foreach ($epg as $program) {
             $isDiscontinuity = true;
-            $segmentStartsAt = clone $program->getStartsAt();
+            $segmentStartsAt = clone $firstProgramStartsAt;
+            $handledDuration = 0;
 
             $m3u8 = $this->parser->parseFromUri($program->getVideo()->getUri());
             foreach ($m3u8->getPlaylist() as $originSegment) {
-                $duration = round($originSegment->getDuration());
-                $segmentEndsAt = clone $segmentStartsAt;
-                $segmentEndsAt->modify(sprintf('+%d seconds', $duration - 1));
+                $handledDuration += $originSegment->getDuration();
+                $segmentEndsAt = clone $firstProgramStartsAt;
+                $segmentEndsAt->modify(sprintf('+%d seconds', round($handledDuration)));
 
                 $segment = $this->mediaSegmentManager->create(
                     $program, $segmentStartsAt, $segmentEndsAt,
@@ -50,7 +65,6 @@ class PlaylistScheduler
                 $this->mediaSegmentManager->saveDeferred($segment);
 
                 $segmentStartsAt = clone $segmentEndsAt;
-                $segmentStartsAt->modify('+1 second');
                 $isDiscontinuity = false;
             }
 

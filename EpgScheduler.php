@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Mala package.
+ *
+ * (c) Chrisyue <http://chrisyue.com/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Chrisyue\Mala;
 
 use Chrisyue\Mala\Manager\EpgManagerInterface;
@@ -9,12 +18,12 @@ use Chrisyue\Mala\Model\ChannelInterface;
 class EpgScheduler
 {
     private $epgManager;
-    private $videoRepository;
+    private $videoManager;
 
-    public function __construct(EpgManagerInterface $epgManager, VideoManagerInterface $videoRepository)
+    public function __construct(EpgManagerInterface $epgManager, VideoManagerInterface $videoManager)
     {
         $this->epgManager = $epgManager;
-        $this->videoRepository = $videoRepository;
+        $this->videoManager = $videoManager;
     }
 
     public function schedule(ChannelInterface $channel, \DateTime $startsAt, \DateTime $endsAt, $isForce = false)
@@ -30,38 +39,38 @@ class EpgScheduler
             $shouldStartsAt->modify('+1 second');
 
             if ($shouldStartsAt > $endsAt) {
-                // 或者上一个epg entry 的结束时间大于结束时间，直接退出
+                // the ends time of the last program is after $endsAt
                 throw new \Exception(sprintf(
                     'Cannot schedule in %s to %s because there is newer epg, you can try to do a force schedule',
                     $startsAt->format('c'),
                     $endsAt->format('c')
                 ));
             }
-            // 确定epg从$startsAt开始还是从last epg entry的结束时间开始
+
             if ($startsAt < $shouldStartsAt) {
                 $startsAt = $shouldStartsAt;
             }
         }
 
-        $videos = $this->videoRepository->findByChannel($channel);
+        $videos = $this->videoManager->findByChannel($channel);
         if (empty($videos)) {
             return;
         }
 
-        $videoStartAt = clone $startsAt;
+        $videoStartsAt = clone $startsAt;
         $sequence = null === $lastProgram ? 0 : $lastProgram->getSequence();
 
         $videos = new \InfiniteIterator(new \ArrayIterator($videos));
         foreach ($videos as $video) {
-            $videoEndAt = clone $videoStartAt;
-            $videoEndAt->modify(sprintf('+%d seconds', $video->getDuration() - 1));
+            $videoEndsAt = clone $videoStartsAt;
+            $videoEndsAt->modify(sprintf('+%d seconds', $video->getDuration() - 1));
 
-            $program = $this->epgManager->createProgram($channel, $video, ++$sequence, $videoStartAt, $videoEndAt);
+            $program = $this->epgManager->createProgram($channel, $video, ++$sequence, $videoStartsAt, $videoEndsAt);
             $this->epgManager->saveDeferred($program);
 
-            $videoStartAt = clone $videoEndAt;
-            $videoStartAt->modify('+1 second');
-            if ($videoStartAt > $endsAt) {
+            $videoStartsAt = clone $videoEndsAt;
+            $videoStartsAt->modify('+1 second');
+            if ($videoStartsAt > $endsAt) {
                 break;
             }
         }
