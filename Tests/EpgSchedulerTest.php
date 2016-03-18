@@ -22,19 +22,16 @@ class EpgSchedulerTest extends \PHPUnit_Framework_TestCase
         $endsAt = new \DateTime('+30 seconds');
 
         $channel = $this->prophesizeChannel();
-
         $epgManager = $this->prophesizeEpgManager($channel);
         $videoManager = $this->prophesizeVideoManager($channel);
 
         $epgScheduler = new EpgScheduler($epgManager->reveal(), $videoManager->reveal());
-
         $epgScheduler->schedule($channel->reveal(), $startsAt, $endsAt);
     }
 
     public function testScheduleWithNoLastProgram()
     {
         $startsAt = new \DateTime();
-        $endsAt = new \DateTime('+30 seconds');
         $videoDuration = 40;
 
         $channel = $this->prophesizeChannel();
@@ -46,7 +43,7 @@ class EpgSchedulerTest extends \PHPUnit_Framework_TestCase
 
         $epgScheduler = new EpgScheduler($epgManager->reveal(), $videoManager->reveal());
         $endsAt = clone $startsAt;
-        $endsAt->modify(sprintf('+%d seconds', $videoDuration - 1)); // duration = [startsAt, endsAt]
+        $endsAt->modify(sprintf('+%d seconds', $videoDuration - 1)); // duration is [startsAt, endsAt]
         $this->epgManagerShouldCreateProgram($epgManager, $channel, $video, 1, $startsAt, $endsAt); // the first program sequence should be 1
 
         $epgScheduler->schedule($channel->reveal(), $startsAt, $endsAt);
@@ -90,7 +87,7 @@ class EpgSchedulerTest extends \PHPUnit_Framework_TestCase
 
         $epgScheduler = new EpgScheduler($epgManager->reveal(), $videoManager->reveal());
         $programEndsAt = clone $lastProgramEndsAt;
-        $programEndsAt->modify(sprintf('+%d seconds', $videoDuration)); // duration = (lastProgramEndsAt, $endsAt]
+        $programEndsAt->modify(sprintf('+%d seconds', $videoDuration)); // duration is (lastProgramEndsAt, $endsAt]
         $programStartsAt = clone $lastProgramEndsAt;
         $programStartsAt->modify('+1 second');
         $this->epgManagerShouldCreateProgram($epgManager, $channel, $video, $lastProgramSequence + 1, $programStartsAt, $programEndsAt);
