@@ -1,6 +1,8 @@
 Mala
 ====
 
+v1.0.0
+
 Transform your m3u8 videos into a http live streaming channel
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/f2d48dbd-2a9c-42eb-94ee-a097fb79e1f6/big.png)](https://insight.sensiolabs.com/projects/f2d48dbd-2a9c-42eb-94ee-a097fb79e1f6)
@@ -22,7 +24,7 @@ $ composer require 'chrisyue/mala'
 Usage
 -----
 
-suppose you've already implemented all interfaces under `Model` and `Manager` namespaces, then you can
+Suppose you've already implemented all interfaces under `Model` and `Manager` namespaces, then you can
 
 ### Generate EPG with m3u8 videos and generate hls playlist (scheduled media segments)
 
@@ -57,4 +59,4 @@ $m3u8 = $m3u8Generator->generate($channel[, $playsAt]); // or can you specify th
 $dumper->dump($m3u8);
 ```
 
-You can check the [chrisyue/mala-bundle](https://github.com/chrisyue/mala-bundle) to get more details
+You can check the [chrisyue/mala-bundle](https://github.com/chrisyue/mala-bundle) to get more details and examples about implementing the model/manager interfaces
