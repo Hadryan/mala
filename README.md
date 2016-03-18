@@ -1,7 +1,7 @@
 Mala
 ====
 
-v1.0.0
+v1.0.1
 
 Transform your m3u8 videos into a http live streaming channel
 
