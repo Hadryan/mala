@@ -27,26 +27,28 @@ class M3u8GeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function testGenerateWithMediaSegments()
     {
+        $startsAt = new \DateTime();
+
         $targetDuration = rand(5, 15);
         $programSequence = rand(1, 9999);
         $version = rand(2, 3);
-        $segment = $this->prophesizeMediaSegment(new \DateTime(), $programSequence);
-        $msManager = $this->prophesizeMediaSegmentManager(new \DateTime(), $targetDuration, array($segment->reveal()));
+        $segmentEndsAt = clone $startsAt;
+        $segment = $this->prophesizeMediaSegment($segmentEndsAt, $programSequence);
+
+        $msManager = $this->prophesizeMediaSegmentManager($startsAt, $targetDuration, array($segment->reveal()));
 
         $m3u8Generator = new M3u8Generator($msManager->reveal(), array('target_duration' => $targetDuration, 'version' => $version));
-        $m3u8 = $m3u8Generator->generate($this->prophesizeChannel()->reveal());
+        $m3u8 = $m3u8Generator->generate($this->prophesizeChannel()->reveal(), $startsAt);
 
         $this->assertEquals($m3u8->getTargetDuration(), $targetDuration);
         $this->assertEquals($m3u8->getVersion(), $version);
         $this->assertEquals($m3u8->getDiscontinuitySequence(), $programSequence);
-        $this->assertEquals($m3u8->getAge(), 1); // even if program will end at once, the age should be one second
+        $this->assertEquals($m3u8->getAge(), 1); // even if first media segment will end at once, the age should be one second
     }
 
     private function prophesizeMediaSegmentManager(\DateTime $startsAt, $targetDuration, array $segments)
     {
         $msManager = $this->prophesize('Chrisyue\Mala\Manager\MediaSegmentManagerInterface');
-
-        $now = new \DateTime();
         $msManager->findPlaying(Argument::type('Chrisyue\Mala\Model\ChannelInterface'), $startsAt, $targetDuration)
             ->shouldBeCalledTimes(1)->willReturn($segments);
 
