@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Mala package.
+ *
+ * (c) Chrisyue <http://chrisyue.com/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Chrisyue\Mala\Manager;
 
 use Chrisyue\Mala\Model\ChannelInterface;
@@ -12,7 +21,7 @@ interface MediaSegmentManagerInterface extends CommitableInterface
 
     public function findLast(ChannelInterface $channel);
 
-    public function findPlaying(ChannelInterface $channel, \DateTime $startsAt, \DateTime $endsAt);
+    public function findPlaying(ChannelInterface $channel, \DateTime $startsAt, $targetDuration);
 
     public function create(ProgramInterface $program, \DateTime $startsAt, \DateTime $endsAt, $uri, $duration, $sequence, $isDiscontinuity);
 
