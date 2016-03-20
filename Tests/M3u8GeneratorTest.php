@@ -33,7 +33,7 @@ class M3u8GeneratorTest extends \PHPUnit_Framework_TestCase
         $programSequence = rand(1, 9999);
         $version = rand(2, 3);
         $segmentEndsAt = clone $startsAt;
-        $segment = $this->prophesizeMediaSegment($segmentEndsAt, $programSequence);
+        $segment = $this->prophesizeMediaSegment($segmentEndsAt, $programSequence, true);
 
         $msManager = $this->prophesizeMediaSegmentManager($startsAt, $targetDuration, array($segment->reveal()));
 
@@ -42,14 +42,16 @@ class M3u8GeneratorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($m3u8->getTargetDuration(), $targetDuration);
         $this->assertEquals($m3u8->getVersion(), $version);
-        $this->assertEquals($m3u8->getDiscontinuitySequence(), $programSequence);
-        $this->assertEquals($m3u8->getAge(), 1); // even if first media segment will end at once, the age should be one second
+        // only when `discontinuity` tag is removed (which the first segment is not discontinuity segment), the media sequence should +1
+        $this->assertEquals($m3u8->getDiscontinuitySequence(), --$programSequence);
+        // even if first media segment will end at once, the age should be one second
+        $this->assertEquals($m3u8->getAge(), 1);
     }
 
     private function prophesizeMediaSegmentManager(\DateTime $startsAt, $targetDuration, array $segments)
     {
         $msManager = $this->prophesize('Chrisyue\Mala\Manager\MediaSegmentManagerInterface');
-        $msManager->findPlaying(Argument::type('Chrisyue\Mala\Model\ChannelInterface'), $startsAt, $targetDuration)
+        $msManager->findPlaying(Argument::type('Chrisyue\Mala\Model\ChannelInterface'), $startsAt, $targetDuration * 3)
             ->shouldBeCalledTimes(1)->willReturn($segments);
 
         return $msManager;
@@ -62,13 +64,15 @@ class M3u8GeneratorTest extends \PHPUnit_Framework_TestCase
         return $channel;
     }
 
-    private function prophesizeMediaSegment(\DateTime $endsAt, $programSequence)
+    private function prophesizeMediaSegment(\DateTime $endsAt, $programSequence, $isDiscontinuity = false)
     {
         $mediaSegment = $this->prophesize('Chrisyue\Mala\Model\ScheduledMediaSegment');
         $mediaSegment->getEndsAt()->shouldBeCalledTimes(1)->willReturn($endsAt);
 
         $program = $this->prophesizeProgram($programSequence);
         $mediaSegment->getProgram()->shouldBeCalledTimes(1)->willReturn($program->reveal());
+
+        $mediaSegment->isDiscontinuity()->shouldBeCalledTimes(1)->willReturn($isDiscontinuity);
 
         return $mediaSegment;
     }

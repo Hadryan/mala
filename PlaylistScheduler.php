@@ -48,13 +48,13 @@ class PlaylistScheduler
 
         foreach ($epg as $program) {
             $isDiscontinuity = true;
-            $segmentStartsAt = clone $firstProgramStartsAt;
+            $segmentStartsAt = clone $program->getStartsAt();
             $handledDuration = 0;
 
             $m3u8 = $this->parser->parseFromUri($program->getVideo()->getUri());
             foreach ($m3u8->getPlaylist() as $originSegment) {
                 $handledDuration += $originSegment->getDuration();
-                $segmentEndsAt = clone $firstProgramStartsAt;
+                $segmentEndsAt = clone $program->getStartsAt();
                 $segmentEndsAt->modify(sprintf('+%d seconds', round($handledDuration)));
 
                 $segment = $this->mediaSegmentManager->create(

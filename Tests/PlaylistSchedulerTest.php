@@ -156,7 +156,7 @@ class PlaylistSchedulerTest extends \PHPUnit_Framework_TestCase
     {
         $program = $this->prophesize('Chrisyue\Mala\Model\ProgramInterface');
         $program->getVideo()->shouldBeCalledTimes(1)->willReturn($video->reveal());
-        $program->getStartsAt()->shouldBeCalledTimes(1)->willReturn($startsAt);
+        $program->getStartsAt()->shouldBeCalled()->willReturn($startsAt);
 
         return $program;
     }
