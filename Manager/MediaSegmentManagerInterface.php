@@ -13,7 +13,7 @@ namespace Chrisyue\Mala\Manager;
 
 use Chrisyue\Mala\Model\ChannelInterface;
 use Chrisyue\Mala\Model\ProgramInterface;
-use Chrisyue\PhpM3u8\M3u8\MediaSegment\MediaSegmentInterface;
+use Chrisyue\Mala\Model\ScheduledMediaSegment;
 
 interface MediaSegmentManagerInterface extends CommitableInterface
 {
@@ -25,5 +25,5 @@ interface MediaSegmentManagerInterface extends CommitableInterface
 
     public function create(ProgramInterface $program, \DateTime $startsAt, \DateTime $endsAt, $uri, $duration, $sequence, $isDiscontinuity);
 
-    public function saveDeferred(MediaSegmentInterface $segment);
+    public function saveDeferred(ScheduledMediaSegment $segment);
 }

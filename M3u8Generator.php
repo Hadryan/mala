@@ -21,7 +21,7 @@ class M3u8Generator
     private $manager;
     private $options;
 
-    public function __construct(MediaSegmentManagerInterface $manager, array $options)
+    public function __construct(MediaSegmentManagerInterface $manager, array $options = array())
     {
         $this->manager = $manager;
         $this->options = $options + array(
@@ -37,7 +37,7 @@ class M3u8Generator
         if (null === $startsAt) {
             $startsAt = new \DateTime();
         }
-        $segments = $this->manager->findPlaying($channel, $startsAt, $targetDuration);
+        $segments = $this->manager->findPlaying($channel, $startsAt, $targetDuration * 3);
         $playlist = new Playlist($segments);
 
         $first = $playlist->getFirst();
@@ -48,6 +48,11 @@ class M3u8Generator
         $age = $first->getEndsAt()->getTimestamp() - $startsAt->getTimestamp() + 1;
         $playlist->setAge($age);
 
-        return new M3u8($playlist, $this->options['version'], $targetDuration, $first->getProgram()->getSequence());
+        $discontinuitySequence = $first->getProgram()->getSequence();
+        if ($first->isDiscontinuity()) {
+            --$discontinuitySequence;
+        }
+
+        return new M3u8($playlist, $this->options['version'], $targetDuration, $discontinuitySequence);
     }
 }

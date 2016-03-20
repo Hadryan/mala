@@ -1,7 +1,7 @@
 Mala
 ====
 
-v1.0.1
+v1.0.2
 
 Transform your m3u8 videos into a http live streaming channel
 
@@ -23,6 +23,8 @@ $ composer require 'chrisyue/mala'
 
 Usage
 -----
+
+I suggest you check the [mala-demo](https://github.com/chrisyue/mala-demo) to see more details.
 
 Suppose you've already implemented all interfaces under `Model` and `Manager` namespaces, then you can
 
@@ -59,4 +61,4 @@ $m3u8 = $m3u8Generator->generate($channel[, $playsAt]); // or can you specify th
 $dumper->dump($m3u8);
 ```
 
-You can check the [chrisyue/mala-bundle](https://github.com/chrisyue/mala-bundle) to get more details and examples about implementing the model/manager interfaces
+You can check the [mala-demo](https://github.com/chrisyue/mala-demo) to get more details and examples about implementing the model/manager interfaces
